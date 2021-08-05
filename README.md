@@ -65,10 +65,32 @@ Go to **Create**:
 
 `print("Hello World!")`
 
+### Download Spark and Dependencies
 
+- https://java.com/en/download/
+- https://www.python.org/
+- https://spark.apache.org/downloads.html
+- https://github.com/cdarlint/winutils - Select your hadoop version and download `bin/winutils.exe`
 
+## Spark RDDs
 
+### Spark RDDs
 
+**Spark RDDs**
+- RDD is the spark's core abstraction which stands for Resilient Distributed Dataset
+- RDD is the inmutable distributed collection of objects
+- Internally spark distributes the data in RDD, to different nodes acorss the cluster to achieve parallelization
+
+**Transformations and Actions**
+- Transformations create a new RDD from an existing one
+- Actions return a value to the driver program after running a computation on the RDD
+- All transformations in Spark are lazy
+- Spark only triggers the data flow when there's an action
+
+### Creating Spark RDD
+
+Go to Data > Create Table
+<img width="731" alt="Screenshot 2021-08-05 at 15 59 31" src="https://user-images.githubusercontent.com/51218415/128420447-30521d2d-d3f3-41f9-a1ba-495923df8fd0.png">
 
 
 
