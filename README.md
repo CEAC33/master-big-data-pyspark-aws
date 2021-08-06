@@ -90,10 +90,282 @@ Go to **Create**:
 ### Creating Spark RDD
 
 Go to Data > Create Table
+
 <img width="731" alt="Screenshot 2021-08-05 at 15 59 31" src="https://user-images.githubusercontent.com/51218415/128420447-30521d2d-d3f3-41f9-a1ba-495923df8fd0.png">
 
+Create a txt file `sample.txt`
 
+```
+1 2 3 4 5
+3 4 5 66 77
+12 43 6 7 8
+12 12 33
+```
 
+And upload it 
 
+<img width="659" alt="Screenshot 2021-08-06 at 0 05 01" src="https://user-images.githubusercontent.com/51218415/128458675-fcbb3cf3-75ed-4ff9-b28a-57b71b6b00bd.png">
 
+Then go to `DBFS` 
+- FileStore > tables > sample.txt
 
+<img width="1147" alt="Screenshot 2021-08-06 at 0 06 16" src="https://user-images.githubusercontent.com/51218415/128458762-14cd60f7-fb8e-4124-9db4-730ae838dbfe.png">
+
+Return to your notebook
+
+```python
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("Read File")
+sc = SparkContext.getOrCreate(conf=conf)
+text = sc.textFile('/FileStore/tables/sample.txt')
+text.collect()
+```
+
+### RDD Map (Lambda)
+
+**map()**
+- Map is used as a maper of data from one state to other
+- It will create a new RDD
+- rdd.map(lambda x:x.plit())
+
+Go your notebook
+
+```python
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("Read File")
+sc = SparkContext.getOrCreate(conf=conf)
+rdd = sc.textFile('/FileStore/tables/sample.txt')
+rdd.collect()
+```
+
+```python
+rdd2 = rdd.map(lambda x: x.split(' '))
+rdd2.collect()
+```
+
+```python
+rdd3 = rdd.map(lambda x: x + " Carlos")
+rdd3.collect()
+```
+
+### RDD Map (Simple Function)
+
+```python
+def foo(x):
+  return x.split(' ')
+  
+rdd4 = rdd.map(foo)
+rdd4.collect()
+```
+
+```python
+def foo2(x):
+  l = x.split()
+  l2 = []
+  for s in l:
+    l2.append(int(s) + 10)
+  return l2
+
+rdd5 = rdd.map(foo2)
+rdd5.collect()
+```
+
+### QUIZ
+
+`Quiz Sample.txt`
+
+```python
+Hi how are you?
+Hope you are doing
+great
+```
+
+Quiz:
+- Read this file in the RDD
+- Write a mapper that will provide the length of each word in the following format
+[[2,3,3,4], [4,3,3,5], [5]]
+
+```python
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("Read File")
+sc = SparkContext.getOrCreate(conf=conf)
+rdd = sc.textFile('/FileStore/tables/Quiz_Sample.txt')
+
+def char_counter(x):
+  word_list = x.split()
+  result = []
+  for word in word_list:
+    result.append(len(word))
+  return result
+
+result = rdd.map(char_counter)
+result.collect()
+```
+
+### Solution 1 (Map)
+
+Setup:
+
+```python
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("Read File")
+sc = SparkContext.getOrCreate(conf=conf)
+rdd = sc.textFile('/FileStore/tables/Quiz_Sample.txt')
+```
+
+Solution 1:
+
+```python
+def quiz(x):
+  # x -> 'great'
+  l = x.split(' ') # l -> ['great']
+  l2 = []
+  for s in l:
+    l2.append(len(s))
+  return l2
+  
+rdd2 = rdd.map(quiz)
+rdd2.collect()
+```
+
+### Solution 2 (Map)
+
+Setup:
+
+```python
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("Read File")
+sc = SparkContext.getOrCreate(conf=conf)
+rdd = sc.textFile('/FileStore/tables/Quiz_Sample.txt')
+```
+
+Solution 2:
+
+```python
+rdd3 = rdd.map(lambda x: [len(s) for s in x.split(' ')])
+rdd3.collect()
+```
+
+### RDD FlatMap
+
+**flatMap()**
+- Flat Map is used as a maper of data and explodes data before final output
+- It will create a new RDD
+- rdd.flatMap(lambda x:x.split())
+
+```python
+# Databricks notebook source
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("FlatMap")
+sc = SparkContext.getOrCreate(conf=conf)
+
+# COMMAND ----------
+
+rdd = sc.textFile('/FileStore/tables/sample.txt')
+rdd.collect()
+
+# COMMAND ----------
+
+flatMappedRdd = rdd.flatMap(lambda x: x.split(" "))
+flatMappedRdd.collect()
+```
+
+### RDD Filter
+
+**filter()**
+- Filter is used to remove the elements from the RDD
+- It will create a new RDD
+- rdd.filter(lambda: x: x != 123)
+
+```python
+# Databricks notebook source
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("FlatMap")
+sc = SparkContext.getOrCreate(conf=conf)
+
+# COMMAND ----------
+
+rdd = sc.textFile('/FileStore/tables/sample.txt')
+rdd.collect()
+
+# COMMAND ----------
+
+def foo(x):
+  if x == '12 12 33':
+    return False
+  else:
+    return True
+
+rdd2 = rdd.filter(foo)
+rdd2.collect()
+```
+
+### Quiz (Filter)
+
+Use this as input file:
+
+```
+this mango company animal
+cat dog ant mic laptop
+chair switch mobile am charger cover
+amanda any alarm ant
+```
+
+- Read this file in the RDD
+- Write a filter that will remove all the words that are either starting from a or c from the rdd
+
+```python
+# Databricks notebook source
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("FlatMap Quiz")
+sc = SparkContext.getOrCreate(conf=conf)
+
+# COMMAND ----------
+
+rdd = sc.textFile('/FileStore/tables/Quiz_Filter.txt')
+rdd.collect()
+
+# COMMAND ----------
+
+def quiz(x):
+  if x[0] in ["a", "c"]:
+    return False
+  else:
+    return True
+
+splitted_rdd = rdd.flatMap(lambda x: x.split(" "))
+rdd2 = splitted_rdd.filter(quiz)
+rdd2.collect()
+```
+
+### Solution (Filter)
+
+```python
+rdd = sc.textFile('/FileStore/tables/sample_words.txt')
+
+# COMMAND ----------
+
+flatMappedRdd = rdd.flatMap(lambda x: x.split(' '))
+
+# COMMAND ----------
+
+def filterAandC(x):
+  if x.startswith('a') or x.startswith('c'):
+    return False
+  else:
+    return True
+  
+filteredRdd = flatMappedRdd.filter(filterAandC)
+
+# COMMAND ----------
+
+filteredRdd.collect()
+
+# COMMAND ----------
+
+filteredRddLambda = flatMappedRdd.filter(lambda x: not (x.startswith('a') or x.startswith('c')) )
+
+# COMMAND ----------
+
+filteredRddLambda.collect()
+```
