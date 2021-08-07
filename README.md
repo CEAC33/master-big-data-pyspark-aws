@@ -369,3 +369,122 @@ filteredRddLambda = flatMappedRdd.filter(lambda x: not (x.startswith('a') or x.s
 
 filteredRddLambda.collect()
 ```
+
+### RDD Distinct
+
+**distinct()**
+- Distinct is used to get the distinct elements in RDD
+- It will create a new RDD
+- rdd.distinct()
+
+```python
+# Databricks notebook source
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("distinct")
+sc = SparkContext.getOrCreate(conf=conf)
+
+# COMMAND ----------
+
+rdd = sc.textFile('/FileStore/tables/sample.txt')
+
+# COMMAND ----------
+
+rdd2 = rdd.distinct()
+rdd2.collect()
+
+# COMMAND ----------
+
+rdd2 = rdd.flatMap(lambda x: x.split(" "))
+rdd3 = rdd2.distinct()
+rdd3.collect()
+
+# COMMAND ----------
+
+rdd.flatMap(lambda x: x.split(" ")).distinct().collect()
+```
+
+### RDD GroupByKey
+
+**groupByKey()**
+- GroupByKey is used to create groups based on Keys in RDD
+- For groupByKey to work properly the data must be in format of (k,v), (k,v), (k2,v), (k2,v2)
+    - Example: ("Apple",1), ("Ball",1), ("Apple",1)
+- It will create a new RDD
+- rdd.groupByKey()
+- mapValues(list) are usually used to get the group data
+
+```python
+# Databricks notebook source
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("distinct")
+sc = SparkContext.getOrCreate(conf=conf)
+
+# COMMAND ----------
+
+rdd = sc.textFile('/FileStore/tables/sample_words.txt')
+
+# COMMAND ----------
+
+rdd2 = rdd.flatMap(lambda x: x.split(' '))
+
+# COMMAND ----------
+
+rdd3 = rdd2.map(lambda x: (x,len(x)))
+rdd3.collect()
+
+# COMMAND ----------
+
+rdd3.groupByKey().mapValues(list).collect()
+
+# COMMAND ----------
+```
+
+### RDD ReduceByKey
+
+**reduceByKey()**
+- ReduceByKey is used to combine data based on Keys in RDD
+- For reduceByKey to work properly the data must be in the format of (k,v), (k,v), (k2,v), (k2,v2)
+    - Example: ("Apple",1), ("Ball",1), ("Apple",1)
+- It will create a new RDD
+- rdd.reduceByKey(lambda x, y: x + y)
+
+```python
+# Databricks notebook source
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("distinct")
+sc = SparkContext.getOrCreate(conf=conf)
+
+# COMMAND ----------
+
+rdd = sc.textFile('/FileStore/tables/sample.txt')
+rdd.collect()
+
+# COMMAND ----------
+
+rdd2 = rdd.flatMap(lambda x: x.split(' '))
+
+# COMMAND ----------
+
+rdd3 = rdd2.map(lambda x: (x,1))
+rdd3.collect()
+
+# COMMAND ----------
+
+rdd3.reduceByKey(lambda x,y: x+y).collect()
+```
+
+### Quiz (Word Count)
+
+Input file:
+
+```
+this mango company
+cat mango ant animal laptop
+chair switch mango am charger cover
+animalany mango ant laptop laptop
+this
+```
+
+- Read this file in the RDD
+- Write a transformation flow that will return the word count of each word present in the file as (key, value) pair
+
